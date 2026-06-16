@@ -6,15 +6,16 @@ export async function GET(req: NextRequest) {
   const artist = sp.get("artist") ?? "";
   const track = sp.get("track") ?? "";
   const album = sp.get("album") ?? undefined;
+  const trackId = sp.get("trackId") ?? undefined;
   const durationRaw = Number(sp.get("duration"));
   const duration = Number.isFinite(durationRaw) ? durationRaw : undefined;
 
-  if (!artist || !track) {
+  if (!trackId && (!artist || !track)) {
     return Response.json({ found: false, lines: [], plain: "" });
   }
 
   try {
-    const result = await getLyrics(artist, track, album, duration);
+    const result = await getLyrics(artist, track, album, duration, trackId);
     return Response.json(result);
   } catch {
     return Response.json({ found: false, lines: [], plain: "" });

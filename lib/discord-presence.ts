@@ -147,7 +147,11 @@ function extractSpotify(
   const a = activities[idx];
   const rawA = isRecord(rawActivities[idx]) ? (rawActivities[idx] as AnyRecord) : {};
   return {
-    trackId: str(rawA.sync_id) ?? str(rawA.syncId) ?? null,
+    trackId:
+      str(rawA.syncId) ??
+      str(rawA.sync_id) ??
+      str(rawA.trackUrl)?.match(/track\/([A-Za-z0-9]+)/)?.[1] ??
+      null,
     song: a.details ?? a.name,
     artist: a.state ?? "",
     album: a.assets?.largeText ?? "",

@@ -19,17 +19,21 @@ export function useLyrics(spotify: SpotifyActivity | null): LyricsState {
   const song = spotify?.song ?? "";
   const artist = spotify?.artist ?? "";
   const album = spotify?.album ?? "";
+  const trackId = spotify?.trackId ?? "";
   const dur =
     spotify && spotify.end > spotify.start
       ? Math.round((spotify.end - spotify.start) / 1000)
       : 0;
 
   useEffect(() => {
-    if (!song || !artist) return;
+    if (!trackId && (!song || !artist)) return;
     let cancelled = false;
     const controller = new AbortController();
 
-    const params = new URLSearchParams({ artist, track: song });
+    const params = new URLSearchParams();
+    if (trackId) params.set("trackId", trackId);
+    if (artist) params.set("artist", artist);
+    if (song) params.set("track", song);
     if (album) params.set("album", album);
     if (dur) params.set("duration", String(dur));
 
@@ -50,7 +54,7 @@ export function useLyrics(spotify: SpotifyActivity | null): LyricsState {
       cancelled = true;
       controller.abort();
     };
-  }, [song, artist, album, dur]);
+  }, [trackId, song, artist, album, dur]);
 
   return state;
 }

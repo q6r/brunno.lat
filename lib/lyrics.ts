@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { fetchJson } from "@/lib/http";
+import { CEEBIO_BASE } from "@/lib/constants";
 import type { LyricLine, LyricsResult } from "@/types/lyrics";
 
 const UA = "crynew-portfolio (https://crynew.dev)";
@@ -23,10 +24,11 @@ const EMPTY: LyricsResult = { found: false, lines: [], plain: "" };
 const mem = new Map<string, LyricsResult>();
 const CACHE_DIR = path.join(process.cwd(), ".cache", "lyrics");
 
-function keyFor(artist: string, track: string): string {
-  return createHash("sha1")
-    .update(`${artist.trim().toLowerCase()}|${track.trim().toLowerCase()}`)
-    .digest("hex");
+function keyFor(trackId: string | undefined, artist: string, track: string): string {
+  const seed = trackId
+    ? `id:${trackId}`
+    : `${artist.trim().toLowerCase()}|${track.trim().toLowerCase()}`;
+  return createHash("sha1").update(seed).digest("hex");
 }
 
 async function readCache(key: string): Promise<LyricsResult | null> {
@@ -127,14 +129,53 @@ async function fetchFromLrclib(
   }
 }
 
+/* ---- Primary source: cee.bio (Musixmatch, by Spotify track id) ---- */
+interface CeeBioLyricsLine {
+  startTimeMs?: string;
+  words?: string;
+}
+interface CeeBioLyricsResponse {
+  success?: boolean;
+  data?: {
+    syncType?: string;
+    plainLyrics?: string;
+    lines?: CeeBioLyricsLine[];
+  };
+}
+
+async function fetchFromCeeBio(trackId: string): Promise<LyricsResult> {
+  try {
+    const json = await fetchJson<CeeBioLyricsResponse>(
+      `${CEEBIO_BASE}/spotify/lyrics/${encodeURIComponent(trackId)}`,
+      { timeoutMs: 12000 }
+    );
+    const data = json.data;
+    if (!json.success || !data) return EMPTY;
+    const synced =
+      data.syncType === "LINE_SYNCED" || data.syncType === "SYLLABLE_SYNCED";
+    if (!synced || !Array.isArray(data.lines)) return EMPTY;
+
+    const lines: LyricLine[] = data.lines
+      .filter((l) => (l.words ?? "").trim().length > 0)
+      .map((l) => ({ t: Number(l.startTimeMs) / 1000, text: (l.words ?? "").trim() }))
+      .filter((l) => Number.isFinite(l.t))
+      .sort((a, b) => a.t - b.t);
+
+    return { found: lines.length > 0, lines, plain: data.plainLyrics ?? "" };
+  } catch {
+    return EMPTY;
+  }
+}
+
 export async function getLyrics(
   artist: string,
   track: string,
   album?: string,
-  durationSec?: number
+  durationSec?: number,
+  trackId?: string
 ): Promise<LyricsResult> {
-  if (!artist.trim() || !track.trim()) return EMPTY;
-  const key = keyFor(artist, track);
+  if (!trackId && (!artist.trim() || !track.trim())) return EMPTY;
+  const key = keyFor(trackId, artist, track);
 
   // 1) in-memory (this process)
   const cached = mem.get(key);
@@ -147,8 +188,13 @@ export async function getLyrics(
     return fromDisk;
   }
 
-  // 3) fetch (slow) and cache
-  const result = await fetchFromLrclib(artist, track, album, durationSec);
+  // 3) fetch: cee.bio first (by track id), then LRCLIB fallback (by name)
+  let result = EMPTY;
+  if (trackId) result = await fetchFromCeeBio(trackId);
+  if (!result.found && artist.trim() && track.trim()) {
+    result = await fetchFromLrclib(artist, track, album, durationSec);
+  }
+
   mem.set(key, result);
   if (result.found) await writeCache(key, result); // lyrics don't change → keep
   return result;
