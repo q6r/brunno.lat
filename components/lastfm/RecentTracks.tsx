@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useDiscordPresence } from "@/hooks/useDiscordPresence";
-import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { NowPlayingTrack } from "@/types/lastfm";
 
 function timeAgo(unix: number | null): string {
@@ -151,21 +150,17 @@ export function RecentTracks({
   }
 
   return (
-    <motion.div
-      className="flex flex-col"
-      variants={reduce ? undefined : staggerContainer}
-      initial={reduce ? undefined : "hidden"}
-      whileInView={reduce ? undefined : "show"}
-      viewport={{ once: true, amount: 0.2 }}
-    >
+    <div className="flex flex-col">
       {tracks.map((track, i) => (
         <motion.div
           key={`${track.url}-${i}`}
-          variants={reduce ? undefined : fadeUp}
+          initial={reduce ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: reduce ? 0 : Math.min(i, 6) * 0.04 }}
         >
           <TrackRow track={track} />
         </motion.div>
       ))}
-    </motion.div>
+    </div>
   );
 }
