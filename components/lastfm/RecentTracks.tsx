@@ -1,15 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { usePolling } from "@/hooks/usePolling";
+import { useDiscordPresence } from "@/hooks/useDiscordPresence";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { NowPlayingTrack } from "@/types/lastfm";
-
-interface RecentResponse {
-  ok: boolean;
-  tracks: NowPlayingTrack[];
-}
 
 function timeAgo(unix: number | null): string {
   if (!unix) return "";
@@ -86,11 +82,65 @@ export function RecentTracks({
   initialTracks: NowPlayingTrack[];
 }) {
   const reduce = useReducedMotion();
-  const { data } = usePolling<RecentResponse>("/api/lastfm/recent?limit=6", 15000, {
-    ok: true,
-    tracks: initialTracks,
-  });
-  const tracks = data?.tracks ?? initialTracks;
+  const { presence } = useDiscordPresence();
+  // Same Spotify drives both Discord presence and Last.fm — refetch when the
+  // playing track changes. Key only changes on an actual song change.
+  const songKey = presence?.spotify
+    ? `${presence.spotify.song}|${presence.spotify.artist}`
+    : "";
+
+  const [tracks, setTracks] = useState<NowPlayingTrack[]>(initialTracks);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const schedule = () => {
+      if (cancelled) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(fetchTracks, 15000);
+    };
+
+    const fetchTracks = async () => {
+      if (document.visibilityState !== "visible") {
+        schedule();
+        return;
+      }
+      try {
+        const res = await fetch("/api/lastfm/recent?limit=6", {
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        // Only replace when we actually got tracks → never wipe the list on a
+        // transient empty/rate-limited response.
+        if (!cancelled && Array.isArray(data?.tracks) && data.tracks.length) {
+          setTracks(data.tracks);
+        }
+      } catch {
+        /* keep last good */
+      }
+      schedule();
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchTracks();
+    };
+
+    // Immediate refetch (also fires when songKey changes), plus a follow-up to
+    // let Last.fm catch up to the new "now playing" after a song change.
+    fetchTracks();
+    const lagTimer = setTimeout(fetchTracks, 2500);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      clearTimeout(lagTimer);
+      controller.abort();
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [songKey]);
 
   if (!tracks.length) {
     return (
@@ -109,7 +159,10 @@ export function RecentTracks({
       viewport={{ once: true, amount: 0.2 }}
     >
       {tracks.map((track, i) => (
-        <motion.div key={`${track.url}-${i}`} variants={reduce ? undefined : fadeUp}>
+        <motion.div
+          key={`${track.url}-${i}`}
+          variants={reduce ? undefined : fadeUp}
+        >
           <TrackRow track={track} />
         </motion.div>
       ))}
