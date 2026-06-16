@@ -21,18 +21,18 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://brunno.lat"),
-  title: "Brunno | Full Stack Developer & Cybersecurity Student",
+  title: "Brunno | Full Stack Developer",
   description:
-    "Full Stack Developer • Cybersecurity Student. Real-time Discord presence and live Last.fm listening data.",
+    "Hi, I'm Brunno, a Full Stack Developer and Cybersecurity Student. Welcome to my website!",
   openGraph: {
-    title: "Brunno | Full Stack Developer & Cybersecurity Student",
-    description: "Full Stack Developer • Cybersecurity Student",
+    title: "Brunno | Full Stack Developer",
+    description: "Hi, I'm Brunno, a Full Stack Developer and Cybersecurity Student. Welcome to my website!",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Brunno | Full Stack Developer & Cybersecurity Student",
-    description: "Full Stack Developer • Cybersecurity Student",
+    title: "Brunno | Full Stack Developer",
+    description: "Hi, I'm Brunno, a Full Stack Developer and Cybersecurity Student. Welcome to my website!",
   },
 };
 
