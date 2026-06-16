@@ -134,12 +134,6 @@ export function DiscordCard({ profile }: { profile: DiscordProfileType }) {
             )}
         </div>
 
-        {profile.bio && (
-          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-highlight">
-            {profile.bio}
-          </p>
-        )}
-
         {/* Live activities */}
         <CardActivities presence={presence} />
 
