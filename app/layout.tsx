@@ -20,18 +20,18 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://crynew.dev"),
-  title: "Crynew — Full Stack Developer",
+  metadataBase: new URL("https://brunno.lat"),
+  title: "Brunno | Full Stack Developer & Cybersecurity Student",
   description:
     "Full Stack Developer • Cybersecurity Student. Real-time Discord presence and live Last.fm listening data.",
   openGraph: {
-    title: "Crynew — Full Stack Developer",
+    title: "Brunno | Full Stack Developer & Cybersecurity Student",
     description: "Full Stack Developer • Cybersecurity Student",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Crynew — Full Stack Developer",
+    title: "Brunno | Full Stack Developer & Cybersecurity Student",
     description: "Full Stack Developer • Cybersecurity Student",
   },
 };
