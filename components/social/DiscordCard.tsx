@@ -33,6 +33,9 @@ function formatDate(ms: number | null): string {
 export function DiscordCard({ profile }: { profile: DiscordProfileType }) {
   const { presence, status } = useDiscordPresence();
   const accent = profile.accentColorHex ?? "#5865f2";
+  const customStatus = presence?.customStatus ?? null;
+  const hasCustomStatus =
+    !!customStatus && !!(customStatus.text || customStatus.emoji);
 
   return (
     <GlassCard>
@@ -58,10 +61,11 @@ export function DiscordCard({ profile }: { profile: DiscordProfileType }) {
       </div>
 
       <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-        {/* Avatar overlap + live status dot */}
-        <div className="-mt-12 mb-3 flex items-end justify-between">
+        {/* Avatar overlap + live status dot, with the custom status as a
+            thought bubble floating off the avatar. */}
+        <div className="relative -mt-12 mb-3 flex items-end gap-4">
           <div
-            className="relative rounded-full p-1"
+            className="relative shrink-0 rounded-full p-1"
             style={{ background: "var(--color-base)" }}
           >
             <div
@@ -90,6 +94,19 @@ export function DiscordCard({ profile }: { profile: DiscordProfileType }) {
             </span>
           </div>
 
+          {hasCustomStatus && (
+            <div className="absolute left-26 -top-10 max-w-[60%]">
+              <div className="w-fit rounded-2xl border border-subtle bg-elevated px-3 py-2 text-sm leading-snug text-highlight shadow-soft">
+                {customStatus!.emoji && (
+                  <span className="mr-1">{customStatus!.emoji}</span>
+                )}
+                {customStatus!.text}
+              </div>
+              {/* thought trail leading back to the avatar */}
+              <span className="absolute -bottom-1.5 left-3 h-2.5 w-2.5 rounded-full border border-subtle bg-elevated" />
+              <span className="absolute -bottom-3 left-0.5 h-1.5 w-1.5 rounded-full border border-subtle bg-elevated" />
+            </div>
+          )}
         </div>
 
         {/* Identity */}
@@ -123,15 +140,6 @@ export function DiscordCard({ profile }: { profile: DiscordProfileType }) {
               </div>
             )}
           </div>
-          {presence?.customStatus &&
-            (presence.customStatus.text || presence.customStatus.emoji) && (
-              <span className="mt-1 truncate text-sm text-highlight">
-                {presence.customStatus.emoji && (
-                  <span className="mr-1">{presence.customStatus.emoji}</span>
-                )}
-                {presence.customStatus.text}
-              </span>
-            )}
         </div>
 
         {/* Live activities */}
