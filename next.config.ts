@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Custom Next.js 16: enables `use cache` / cacheLife / cacheTag (Cache Components).
   cacheComponents: true,
   images: {
     remotePatterns: [

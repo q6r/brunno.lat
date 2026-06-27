@@ -46,7 +46,7 @@ export default async function Home() {
     getGithubRepos(6),
     getGithubReadmeHtml(),
     getUserStats(),
-    getTopArtists("1month", 12),
+    getTopArtists("overall", 12),
     getTopAlbums("1month", 6),
     getTopTracks("1month", 6),
   ]);

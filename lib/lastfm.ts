@@ -45,6 +45,16 @@ function hasLfmError(json: unknown): json is { error: number; message: string } 
   return !!json && typeof json === "object" && "error" in json;
 }
 
+/**
+ * Last.fm's user.getinfo returns avatar URLs whose large sizes (`174s`,
+ * `300x300`) frequently 404 on the CDN, while `avatar170s` is served
+ * reliably. Rewrite the size segment so the profile photo actually loads.
+ */
+function normalizeAvatar(url: string | null): string | null {
+  if (!url) return null;
+  return url.replace(/\/i\/u\/[^/]+\//, "/i/u/avatar170s/");
+}
+
 export async function getRecentTracks(limit = 6): Promise<NowPlayingTrack[]> {
   "use cache";
   cacheLife("seconds");
@@ -180,7 +190,7 @@ export async function getUserStats(): Promise<UserStats> {
       trackCount: Number(u.track_count) || 0,
       albumCount: Number(u.album_count) || 0,
       registeredUnix: Number(u.registered?.unixtime) || null,
-      imageUrl: bestImage(u.image),
+      imageUrl: normalizeAvatar(bestImage(u.image)),
       username: u.name || user,
       realName: u.realname || "",
       country,
