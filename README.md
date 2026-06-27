@@ -21,13 +21,26 @@ My personal site. A dark, animated portfolio that pulls live data from Discord, 
 
 ## Screenshots
 
-| Discord presence | GitHub profile |
-|---|---|
-| ![Discord card](docs/screenshots/discord-card.png) | ![GitHub card](docs/screenshots/github-card.png) |
+<table>
+  <tr>
+    <td align="center" width="50%"><b>Discord presence</b></td>
+    <td align="center" width="50%"><b>Last.fm listening</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/discord-card.png" alt="Discord presence card" /></td>
+    <td><img src="docs/screenshots/listening.png" alt="Last.fm listening" /></td>
+  </tr>
+</table>
 
-| Friends | Last.fm |
-|---|---|
-| ![Friends grid](docs/screenshots/friends.png) | ![Last.fm listening](docs/screenshots/listening.png) |
+**Friends**
+
+<img src="docs/screenshots/friends.png" alt="Friends grid" width="100%" />
+
+**GitHub profile**
+
+<p align="center">
+  <img src="docs/screenshots/github-card.png" alt="GitHub profile card" width="65%" />
+</p>
 
 ## Tech Stack
 
@@ -71,7 +84,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 > Secrets live in `.env.local`, which is git-ignored. Only `.env.example` is committed.
 
-The Discord friends shown in the grid are configured in [`lib/constants.ts`](lib/constants.ts) (`DISCORD_FRIEND_IDS`).
+> **Discord presence:** cee.bio only reads a user's badges and activities if its bot shares a server with them. If the socket returns no data for your `DISCORD_USER_ID`, join [discord.gg/erro](https://discord.gg/erro) so cee.bio can pick up your status, badges and activities.
+
+The Discord friends shown in the grid are configured in [`lib/constants.ts`](lib/constants.ts) (`DISCORD_FRIEND_IDS`). The same applies to them: they each need to be in [discord.gg/erro](https://discord.gg/erro) to show up with live data.
 
 ### Scripts
 
