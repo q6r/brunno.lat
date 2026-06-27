@@ -5,7 +5,6 @@
 export const DISCORD_USER_ID = "73598582153805824";
 export const LASTFM_USER = "crynew";
 export const GITHUB_USER = "q6r";
-export const INSTAGRAM_USER = "imsbrunno";
 
 export const DISCORD_FRIEND_IDS = [
   "460895785333161985",
