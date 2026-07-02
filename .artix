@@ -1,0 +1,8 @@
+NAME=brunno
+TYPE=site
+RUNTIME=node
+VERSION=20
+RAM=256
+BUILD=npm install && npm run build
+START=npm start
+PORT=3111
